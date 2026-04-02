@@ -1,0 +1,49 @@
+﻿name: Auto Publish
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */5 * * *"
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -U google-generativeai
+
+      - name: Generate content
+        env:
+          AI_API_KEY: ${{ secrets.AI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.AI_API_KEY }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python .github/scripts/generate.py
+
+      - name: Commit and push if changed
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          if git diff --staged --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Auto publish $(date +%Y-%m-%dT%H:%M:%S)"
+            for i in {1..5}; do
+              git pull --rebase origin main && git push origin main && break || sleep 10
+            done
+          fi

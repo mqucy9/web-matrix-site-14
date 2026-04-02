@@ -1,0 +1,5 @@
+﻿{
+  "header": "<div class=\"ad\" aria-label=\"sponsor-top\">顶部广告位</div>",
+  "mid": "<div class=\"ad\" aria-label=\"sponsor-mid\">正文中部广告位</div>",
+  "footer": "<div class=\"ad\" aria-label=\"sponsor-bottom\">页尾广告位</div>"
+}
